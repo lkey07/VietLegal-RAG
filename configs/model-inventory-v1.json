@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "inventory_id": "uit-dsc-2026-fixed-rag-models-v1",
+  "metadata_checked_on": "2026-08-16",
+  "parameter_limit_exclusive": 4000000000,
+  "parameter_count_policy": "Count every tensor in every model loaded by the final system. Quantization, pruning and LoRA do not reduce the base-model count.",
+  "parameter_count_evidence": "Hugging Face model API safetensors.total at the immutable revision; verify again with sum(p.numel()) after an authorized weight download.",
+  "registration_reference": {
+    "path": "data/raw/[DSC@UIT 2026] Danh sách mô hình - Sheet1.csv",
+    "sha256": "0b1de15db2869990739a4e6dd57186db14b09a5a2607ad834c927d0bab604e95",
+    "meaning": "Reference supplied by the organizer; presence is not proof that the team's final registration has been accepted."
+  },
+  "models": [
+    {
+      "key": "embedding_harrier",
+      "model_id": "mainguyen9/vietlegal-harrier-0.6b",
+      "role": "embedding",
+      "url": "https://huggingface.co/mainguyen9/vietlegal-harrier-0.6b",
+      "revision": "91a0e1ebe4b63b4475bbae40658b8ca9231bea74",
+      "revision_url": "https://huggingface.co/mainguyen9/vietlegal-harrier-0.6b/tree/91a0e1ebe4b63b4475bbae40658b8ca9231bea74",
+      "license": "apache-2.0",
+      "parameter_count": 596049920,
+      "configured_max_sequence_length": 512,
+      "metadata_source": "https://huggingface.co/api/models/mainguyen9/vietlegal-harrier-0.6b/revision/91a0e1ebe4b63b4475bbae40658b8ca9231bea74",
+      "registration_reference_status": "present_in_reference_csv",
+      "artifact_status": "not_downloaded",
+      "decision": "primary_candidate",
+      "notes": "Vietnamese legal-domain embedding candidate. Corpus must be re-embedded if this model is replaced or fine-tuned."
+    },
+    {
+      "key": "embedding_aiteam",
+      "model_id": "AITeamVN/Vietnamese_Embedding",
+      "role": "embedding",
+      "url": "https://huggingface.co/AITeamVN/Vietnamese_Embedding",
+      "revision": "dea33aa1ab339f38d66ae0a40e6c40e0a9249568",
+      "revision_url": "https://huggingface.co/AITeamVN/Vietnamese_Embedding/tree/dea33aa1ab339f38d66ae0a40e6c40e0a9249568",
+      "license": "apache-2.0",
+      "parameter_count": 567754752,
+      "configured_max_sequence_length": 8192,
+      "metadata_source": "https://huggingface.co/api/models/AITeamVN/Vietnamese_Embedding/revision/dea33aa1ab339f38d66ae0a40e6c40e0a9249568",
+      "registration_reference_status": "present_in_reference_csv",
+      "artifact_status": "not_downloaded",
+      "decision": "ab_candidate",
+      "notes": "A/B alternative only, never loaded together with embedding_harrier in a competition run. The model card and sentence-transformers config report different maximum lengths; experiments cap chunks at 384 tokens."
+    },
+    {
+      "key": "reranker_vietnamese",
+      "model_id": "AITeamVN/Vietnamese_Reranker",
+      "role": "reranker",
+      "url": "https://huggingface.co/AITeamVN/Vietnamese_Reranker",
+      "revision": "f536976248403314225d7fdfdbc87f0e9516a54e",
+      "revision_url": "https://huggingface.co/AITeamVN/Vietnamese_Reranker/tree/f536976248403314225d7fdfdbc87f0e9516a54e",
+      "license": "apache-2.0",
+      "parameter_count": 567755777,
+      "trained_pair_max_sequence_length": 2304,
+      "metadata_source": "https://huggingface.co/api/models/AITeamVN/Vietnamese_Reranker/revision/f536976248403314225d7fdfdbc87f0e9516a54e",
+      "registration_reference_status": "present_in_reference_csv",
+      "artifact_status": "not_downloaded",
+      "decision": "primary_candidate",
+      "notes": "Cross-encoder reranker. Query-plus-passage inputs must remain within the documented trained pair length."
+    },
+    {
+      "key": "generator_qwen35_2b",
+      "model_id": "Qwen/Qwen3.5-2B",
+      "role": "generator",
+      "url": "https://huggingface.co/Qwen/Qwen3.5-2B",
+      "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "revision_url": "https://huggingface.co/Qwen/Qwen3.5-2B/tree/15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "license": "apache-2.0",
+      "parameter_count": 2274069824,
+      "configured_max_sequence_length": 262144,
+      "metadata_source": "https://huggingface.co/api/models/Qwen/Qwen3.5-2B/revision/15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "registration_reference_status": "present_in_reference_csv",
+      "artifact_status": "not_downloaded",
+      "decision": "primary_candidate",
+      "notes": "Count includes all tensors published in the checkpoint, including components unused by text-only inference."
+    }
+  ],
+  "candidate_stacks": [
+    {
+      "stack_id": "harrier-primary-v1",
+      "model_keys": [
+        "embedding_harrier",
+        "reranker_vietnamese",
+        "generator_qwen35_2b"
+      ],
+      "total_parameter_count": 3437875521,
+      "parameter_headroom": 562124479,
+      "status": "primary_candidate"
+    },
+    {
+      "stack_id": "aiteam-embedding-ab-v1",
+      "model_keys": [
+        "embedding_aiteam",
+        "reranker_vietnamese",
+        "generator_qwen35_2b"
+      ],
+      "total_parameter_count": 3409580353,
+      "parameter_headroom": 590419647,
+      "status": "ab_candidate"
+    }
+  ],
+  "zero_parameter_components": [
+    "word BM25",
+    "character or accent-normalized sparse retrieval",
+    "reciprocal-rank fusion",
+    "legal-reference parser",
+    "rule-based context and output validation"
+  ],
+  "excluded_candidates": [
+    {
+      "model_id": "AITeamVN/Vi-Qwen2-3B-RAG",
+      "reason": "Model identity and lineage information is internally inconsistent enough to make the under-4B audit unsafe."
+    },
+    {
+      "model_id": "infgrad/Prism-Qwen3.5-Reranker-2B",
+      "reason": "A 2B reranker cannot fit with the selected 2.274B generator under the strict aggregate 4B limit."
+    }
+  ],
+  "approval_state": {
+    "inventory_reviewed": false,
+    "final_stack_selected": false,
+    "btc_registration_confirmed": false,
+    "weights_download_authorized": false
+  }
+}

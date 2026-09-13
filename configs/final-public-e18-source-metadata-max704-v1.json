@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "FINAL-public1000-e08b-source-metadata-max704-v1",
+  "base_config_path": "configs/final-public-e08b-context-lora-max704-v1.json",
+  "base_config_sha256": "f8a08991d9b84a4c8132642a6d059f703af2b7e67a5444fb245687984e33a194",
+  "model_selection": {
+    "report_experiment_id": "E18-e08b-source-metadata-fresh-dev200-max704-v1",
+    "winner": "source_metadata_top12",
+    "control": "ranked_top12_control",
+    "sample_size": 200,
+    "config_sha256": "d5fea1a7fffddd75f3a345e3f8ad6fbb1a1ddf376d29436550a1d752b800ddf8",
+    "sample_ids_sha256": "bdaa9b38b04f056787604bfe00ffb6c56a42cfc1a5cb61aacba4ed2e2072e6df",
+    "generation_results_sha256": "387c7ef0e2c2fd3a0ee408c965237fbaa58b72dd6f4e2738c38393aad795a60c",
+    "adapter_sha256": "14316bdb1a999e67c9baae90620c785977856e68cd540d46dbc57f1b2176499d",
+    "control_meteor": 0.540797656304365,
+    "candidate_meteor": 0.5533650437609198,
+    "control_rouge_l": 0.573921443967621,
+    "candidate_rouge_l": 0.5889072734314257,
+    "meteor_delta": 0.012567387456554715,
+    "meteor_ci": [-0.005081754550967019, 0.030618916988666846],
+    "improved_questions": 105,
+    "worsened_questions": 74,
+    "tied_questions": 21,
+    "promotion_allowed": false,
+    "operator_selected_for_public_trial": true
+  },
+  "metadata_source": {
+    "artifact_version": "e00-v2",
+    "manifest_sha256": "04efd3905ad6d2758461587ca68d7d70fa2c568855b78f0c762c7a37ba547b2e",
+    "chunks_sha256": "1e48c7762765ac2dd169045e9f5327c5311db3f1da8a6007ef70fff58718e367",
+    "documents_sha256": "f2968724e8a25124034b9ff2144427f8853ed37359443bd149ec3832f4c1fed7",
+    "policy": "exact-source-title-and-article-title-plus-unambiguous-header-So-number-v1"
+  },
+  "public_trial": {
+    "context_count": 12,
+    "max_input_tokens": 8192,
+    "max_new_tokens": 704,
+    "overflow_policy": "fail-before-generation-never-drop-contexts",
+    "generation_workers": 2,
+    "questions_per_worker": 500,
+    "public_answers_never_read": true,
+    "retrieval_scores_and_order_unchanged": true,
+    "context_bodies_unchanged": true,
+    "metadata_only_change": true
+  }
+}

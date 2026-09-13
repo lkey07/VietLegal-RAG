@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "FINAL-public1000-aiteam-e08b-context-lora-max704-v1",
+  "model_selection": {
+    "report_experiment_id": "E08B-context-aware-lora-dev200-max704-paired-v1",
+    "winner": "e08b_context_lora_max704",
+    "sample_size": 200,
+    "config_sha256": "9590957b0eee9e44abcd93804eee32416a2f17d0f10befe1dbb21685e3bf8c78",
+    "contexts_sha256": "56ed911cba621d9d30d582dea9388efca14e16f9f3ab6a5bc23d250b0bb6017c",
+    "control_results_sha256": "a9e1a8697e26a6c4c8fb3ebc5064bd5ca7fec2e15be85204b22c98482a8d700a",
+    "generation_results_sha256": "2c48ab2b3bd7f1ea9c372ef368526dfe224f19288aa45f460661e4f10c19f0f6",
+    "adapter_sha256": "14316bdb1a999e67c9baae90620c785977856e68cd540d46dbc57f1b2176499d",
+    "control_meteor": 0.46965886426597114,
+    "candidate_meteor": 0.5622157149123774,
+    "candidate_rouge_l": 0.5777672245600963,
+    "meteor_delta": 0.09255685064640623,
+    "meteor_ci_lower": 0.06405177826665513,
+    "rouge_l_delta": 0.09591696680736796,
+    "rouge_l_ci_lower": 0.07068405132396785,
+    "promotion_allowed": false
+  },
+  "retrieval_reuse": {
+    "report_experiment_id": "FINAL-public1000-aiteam-qwen35-lora-v1",
+    "config_sha256": "159938b72a978bbdf1e25629c8ae9bb08296ebf0f50867452f27fd1a30e538b7",
+    "path": "retrieval/results.jsonl",
+    "sample_size": 1000,
+    "contexts_per_question": 12
+  },
+  "full_lora_source": {
+    "experiment_id": "E08B-context-aware-lora-train5636-dev521-v3",
+    "training_config_path": "configs/e08b-context-aware-lora-v3.json",
+    "training_config_sha256": "97ee3c5bb0871cd22687d225eb69730dee6cc296a9c3b812e532cd1fd146f5db",
+    "adapter_relative_path": "training/adapter-final/adapter_model.safetensors",
+    "adapter_sha256": "14316bdb1a999e67c9baae90620c785977856e68cd540d46dbc57f1b2176499d",
+    "source_contexts_sha256": "8bb590020510bc512dbcf738165480cd164059826849a001d117c2374e8e0786",
+    "train_sample_size": 5636,
+    "fresh_from_base": true
+  },
+  "public": {
+    "path": "data/raw/public-official.json",
+    "sha256": "5f68ca901cb20798559538bef60fa7c32bd7d0df59f5bf31a37eb220c9e00df5",
+    "sample_size": 1000,
+    "order": "lexicographic-question-id",
+    "sample_ids_sha256": "1f566e16125fd7eb2af5382f2527ed47e6e00b9d1dca5f9c238efe480481b84f",
+    "answer_contract": "all-null-and-never-read-for-inference"
+  },
+  "source_dense": {
+    "candidate": "embedding_aiteam"
+  },
+  "retrieval": {
+    "candidate_k_per_branch": 40,
+    "rrf_constant": 60,
+    "sparse_weight": 0.5,
+    "dense_weight": 0.5,
+    "fused_top_k": 20,
+    "selected_contexts": 12,
+    "normalize_query_embeddings": true,
+    "dense_search_backend": "torch-cuda-exact-flat-ip-float32-batched",
+    "reranker": null
+  },
+  "generator": {
+    "model_id": "Qwen/Qwen3.5-2B",
+    "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "published_parameter_count": 2274069824,
+    "adapter_variant": "e08b-context-aware-full-train-5636"
+  },
+  "inference": {
+    "system_prompt": "Bạn là trợ lý pháp luật Việt Nam. Chỉ trả lời dựa trên các tài liệu được cung cấp. Không bịa thông tin hoặc viện dẫn không có trong tài liệu. Nếu tài liệu không đủ, hãy nói rõ là không đủ căn cứ.",
+    "answer_instruction": "Hãy trả lời trực tiếp câu hỏi bằng tiếng Việt, nêu căn cứ pháp lý và các điều kiện hoặc mốc thời gian quan trọng nếu tài liệu có đề cập. Không nhắc đến mã tài liệu nội bộ.",
+    "max_input_tokens": 8192,
+    "minimum_contexts": 1,
+    "max_new_tokens": 704,
+    "do_sample": false,
+    "num_beams": 1,
+    "enable_thinking": false,
+    "use_cache": true
+  },
+  "parameter_budget": {
+    "exclusive_limit": 4000000000,
+    "embedding": 567754752,
+    "generator": 2274069824,
+    "adapter_parameter_cap": 50000000,
+    "maximum_stack_total": 2891824576
+  },
+  "execution": {
+    "generation_workers": 2,
+    "generation_partition": "sample-index-mod-worker-count",
+    "questions_per_worker": 500,
+    "checkpoint_after_questions": 1
+  },
+  "submission_contract": {
+    "official_scorer_zip_path": "data/raw/Scoring-Program-Task-LegalQA.zip",
+    "official_scorer_zip_sha256": "4fac914203d325445a666c0c566530c962ba95b843e1988e4f37057c47447891",
+    "official_scorer_entry": "scoring.py",
+    "official_scorer_entry_sha256": "f04843fbfad26d41356506d8e49692a7c8a0ed1b9f065a3a8472fa6398a5aa95",
+    "archive_name": "submission.zip",
+    "json_name": "submission.json",
+    "record_schema": {"answer": "non-empty-string"},
+    "encoding": "UTF-8-without-BOM",
+    "archive_members": ["submission.json"]
+  },
+  "run_contract": {
+    "operator_selected_e08b_from_paired_dev200": true,
+    "public_retrieval_reused_byte_for_byte": true,
+    "only_generator_adapter_changed_from_retrieval_source_run": true,
+    "max_new_tokens_frozen_at_704": true,
+    "public_answers_never_read": true,
+    "no_external_or_synthetic_data": true,
+    "no_api_model": true,
+    "fixed_non_agentic_rag": true,
+    "checkpoint_after_each_question_id": true,
+    "resume_fail_closed": true,
+    "submission_exactly_matches_official_scorer_mapping": true
+  }
+}

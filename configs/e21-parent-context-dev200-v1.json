@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "E21-parent-context-dev200-v1",
+  "source_contract_path": "configs/e20-source-aware-top20-expansion-dev200-v1.json",
+  "policy": {
+    "seed_contexts": 12,
+    "max_input_tokens": 8192,
+    "max_new_tokens": 704,
+    "max_parent_tokens": 1200,
+    "max_parent_characters": 6000,
+    "neighbor_radius": 1,
+    "expansion_order": ["whole_article", "both_neighbors", "previous_neighbor", "next_neighbor"],
+    "evict_seed_for_expansion": false,
+    "merge": "overlapping-or-touching-exact-document-spans",
+    "metadata": "one-source-header-per-document-article-label-per-span",
+    "variants": ["compact_seeds_max704", "parent_expanded_max704"],
+    "questions_per_worker": 200,
+    "sample": "reuse-e19-dev400-600",
+    "reference_answers": "final-scoring-and-human-review-only"
+  },
+  "promotion_allowed": false
+}

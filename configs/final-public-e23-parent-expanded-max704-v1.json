@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "FINAL-public1000-e23-parent-expanded-max704-v1",
+  "base_config_path": "configs/final-public-e19-metadata-trained-max704-v1.json",
+  "base_config_sha256": "210fa8f1d94c3acd0607632ada66fce554f45dbb1dce890b21f48fd3e9df78e7",
+  "selection": {
+    "experiment_id": "E21-parent-context-dev200-v1",
+    "candidate_variant": "parent_expanded_max704",
+    "sample_size": 200,
+    "sample_scope": "already-used-e19-dev400-600-final121-not-scored",
+    "config_sha256": "fe8554d5f222e03a8f60ee181f8cfc4d1570719efaa6c56e2f7559fad1672ade",
+    "code_sha256": "e5574861eb34ae3fdee1220d5260109ddd9f84feacea9c1ec46a78df8b5527c8",
+    "results_sha256": "cbe3d5e163e1983f031a06c767596fcebd91177e3b90625998a1deed28f6afe4",
+    "control_meteor": 0.5233168277186363,
+    "candidate_meteor": 0.5633893466813007,
+    "candidate_rouge_l": 0.5864053775086489,
+    "meteor_delta": 0.04007251896266439,
+    "meteor_ci": [0.012369872150859176, 0.06805563198334254],
+    "improved": 110,
+    "worsened": 76,
+    "tied": 14,
+    "promotion_allowed": false,
+    "operator_selected_for_public_trial": true
+  },
+  "context_policy": {
+    "source_config_path": "configs/e21-parent-context-dev200-v1.json",
+    "source_config_sha256": "fe8554d5f222e03a8f60ee181f8cfc4d1570719efaa6c56e2f7559fad1672ade",
+    "variant": "parent_expanded_max704",
+    "seed_contexts": 12,
+    "merge": "overlapping-or-touching-exact-document-spans",
+    "metadata": "one-source-header-per-document-article-label-per-span",
+    "max_parent_tokens": 1200,
+    "max_parent_characters": 6000,
+    "max_input_tokens": 8192,
+    "max_new_tokens": 704,
+    "evict_seed_for_expansion": false
+  },
+  "public_trial": {
+    "sample_size": 1000,
+    "generation_workers": 2,
+    "questions_per_worker": 500,
+    "partition": "sample-index-mod-worker-count",
+    "public_answers_never_read": true,
+    "saved_public_top12_reused": true,
+    "same_e19_adapter": true,
+    "rollback_public_meteor": 0.5309,
+    "rollback_public_rouge_l": 0.5632
+  }
+}

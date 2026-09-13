@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uit-dsc-2026-fixed-rag"
+version = "0.29.0"
+description = "Leakage-safe fixed RAG pipeline for UIT DSC 2026 Task 2"
+requires-python = ">=3.10"
+dependencies = [
+  "nltk==3.7",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

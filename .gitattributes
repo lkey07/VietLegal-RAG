@@ -1,0 +1,8 @@
+# Preserve the byte-pinned E23 source/config snapshot across platforms.
+*.py text eol=lf
+*.json text eol=lf
+*.ipynb text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf

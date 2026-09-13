@@ -1,0 +1,27 @@
+# Official competition inputs and derived artifacts must remain local.
+data/
+artifacts/
+checkpoints/
+models/
+outputs/
+reports/
+cache/
+dist/
+submission.zip
+submission.json
+results.jsonl
+*.safetensors
+*.faiss
+*.sqlite
+*.db
+*.zip
+
+# Local tooling state.
+.env
+.env.*
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.log
