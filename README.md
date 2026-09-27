@@ -1,68 +1,117 @@
-# Vietnamese Legal QA · Fixed RAG (UIT DSC 2026)
+# VietLegal-RAG
 
-Hệ thống hỏi–đáp pháp luật tiếng Việt cho UIT Data Science Challenge 2026, Task 2. Đây là pipeline **fixed, deterministic RAG**: truy xuất bằng BM25 và dense embedding, hợp nhất kết quả, bổ sung ngữ cảnh cùng Điều, rồi sinh câu trả lời bằng Qwen3.5-2B đã fine-tune LoRA trên dữ liệu chính thức.
+## Inference-Aligned Hierarchical RAG for Vietnamese Legal QA
 
-> **Kết quả tốt nhất đã nộp trên public-1000:** **METEOR 0.5584 · ROUGE-L 0.5727** (E23, 1.000 câu). Đây chỉ là điểm **public**; chưa có kết quả private để công bố.
+VietLegal-RAG là hệ thống hỏi–đáp pháp luật tiếng Việt được phát triển cho
+UIT Data Science Challenge 2026, Task 2. Hệ thống kết hợp lexical retrieval,
+dense retrieval, ngữ cảnh phân cấp theo Điều luật và LoRA fine-tuning trong một
+pipeline deterministic, có kiểm tra identity bằng SHA-256 và checkpoint theo
+từng question ID.
 
-## Bài toán và đóng góp
+> **Thành tích:** **Top 10 public leaderboard**, public-best METEOR **0.5817**;
+> private-best METEOR **0.597327402**, ROUGE-L **0.586192885** trên 1.918 câu.
+> Thứ hạng public do đội thi ghi nhận; các điểm private được lưu trong scoring
+> artifact của đúng submission có SHA-256
+> `d697c48e4ce48410ad4695291c98891f9f872a88cf0f6d1dfc576d8dbf86496b`.
 
-Một chunk pháp luật tìm đúng từ khóa vẫn có thể thiếu phần quy định đối tượng áp dụng, điều kiện hoặc ngoại lệ ở cùng Điều. Pipeline giải quyết hai nút thắt: chọn đúng nguồn bằng hybrid retrieval và đưa đủ phần văn bản pháp luật liên quan vào prompt mà vẫn giữ giới hạn token. Generator được huấn luyện với cùng định dạng metadata mà nó nhận khi suy luận.
+## Đóng góp chính
 
-| Thành phần | Cách triển khai ở bản E23 |
-| --- | --- |
-| Dữ liệu | Corpus và 5.636 câu train chính thức; tách train/dev theo nhóm câu hỏi đã chuẩn hóa để tránh trùng câu. Đáp án train chỉ giám sát phần trả lời, không dùng làm nhãn retrieval. |
-| Index | Văn bản được audit, chuẩn hóa thận trọng và chia theo cấu trúc Điều/Khoản. BM25 trên SQLite FTS5; dense index dùng `AITeamVN/Vietnamese_Embedding`. |
-| Retrieval | Mỗi nhánh lấy ứng viên, hợp nhất bằng weighted RRF với trọng số BM25/dense 0,5/0,5; lấy 12 chunk xếp hạng cao nhất. **Không dùng reranker** ở bản E23. |
-| Context | Bổ sung tên nguồn, số văn bản khi xác định được và tên Điều. Gộp các đoạn trùng/chồng lấn, giữ nguyên 12 seed; mở rộng bằng các span nguyên văn, có giới hạn, từ **cùng Điều**. Metadata cùng nguồn chỉ ghi một lần. |
-| Generator | `Qwen/Qwen3.5-2B` + LoRA rank 8, alpha 16, huấn luyện mới từ base trong 1 epoch trên 5.636 QA chính thức với ngữ cảnh có metadata; giới hạn chuỗi train 3.072 token. |
-| Suy luận | Prompt tối đa 8.192 token, greedy decoding (`do_sample=false`, `num_beams=1`), `max_new_tokens=704`. Hai T4 xử lý 500 câu mỗi GPU; checkpoint sau từng question ID và từ chối resume khi identity thay đổi. |
-| Đầu ra | `submission.zip` chỉ chứa UTF-8 `submission.json` theo mapping `question_id → {"answer": string}`. |
+- Xây dựng hybrid retrieval trên corpus pháp luật chính thức bằng SQLite FTS5
+  BM25 và `AITeamVN/Vietnamese_Embedding`, sau đó hợp nhất thứ hạng bằng RRF.
+- Giữ 12 seed context, bổ sung metadata nguồn và mở rộng có giới hạn sang toàn
+  Điều hoặc các chunk lân cận mà không dùng đáp án làm retrieval label.
+- Fine-tune generator bằng đúng định dạng parent-expanded evidence và prompt
+  được dùng khi inference, giảm train–inference context mismatch.
+- Generation greedy 1.024 token, chỉ sinh lại câu chạm trần từ prompt gốc với
+  giới hạn 1.536 token; hậu xử lý chỉ xóa phần lặp ở suffix.
+- Batch inference fail-closed: pin model/config/artifact hash, checkpoint sau
+  từng question ID và chỉ resume khi toàn bộ identity khớp.
 
-Không có Agent, model API, web search hay dữ liệu/synthetic QA ngoài phạm vi được phép. Hệ thống E23 dùng embedding và generator; các thao tác BM25/RRF/context là thuật toán không có tham số. Giới hạn tham số được kiểm tra theo **model gốc**, không trừ đi nhờ quantization/LoRA.
-
-## Các mốc tăng điểm public
-
-Tất cả số dưới đây là **METEOR/ROUGE-L public trên cùng 1.000 câu**, không phải điểm dev hay dự đoán private. Mỗi mốc chỉ nêu thay đổi chính so với phiên bản ngay trước nó; E08B là mốc đầu tiên của pipeline fixed-RAG mới, độc lập với code M45–M48 cũ.
-
-| Bản | Submission ID | METEOR public | ROUGE-L public | Thay đổi dẫn tới bản nộp |
-| --- | ---: | ---: | ---: | --- |
-| **E08B** | 911313 | **0.5209** | 0.5533 | Hybrid BM25 + AITeam dense, RRF 0,5/0,5, top-12 context; Qwen3.5-2B fine-tune LoRA rank 8 có context, output tối đa 704 token. |
-| **E18** | 915723 | **0.5251** (**+0.0042**) | 0.5623 | Giữ retrieval, thứ tự chunk, adapter và decoding; thêm metadata nguồn chính xác (tên nguồn, số văn bản không mơ hồ, tên Điều) vào context khi suy luận. |
-| **E19** | 916686 | **0.5309** (**+0.0058**) | 0.5632 | Train lại LoRA rank 8 **từ base** với cùng metadata E18 trên 5.636 câu chính thức; định dạng train và inference đồng nhất. |
-| **E23** | 917914 | **0.5584** (**+0.0275**) | 0.5727 | Giữ adapter E19, top-12 retrieval và greedy max704; gộp span chồng lấn và mở rộng có giới hạn bằng đoạn nguyên văn **cùng Điều** quanh seed. |
-
-Từ E08B đến E23, METEOR public tăng **0.0375 điểm tuyệt đối**. Các số trên được đối chiếu từ ảnh leaderboard do nhóm vận hành cung cấp; repo không phát hành prediction hoặc đáp án. Đây là chuỗi kết quả quan sát được, **không chứng minh** từng cải tiến sẽ tiếp tục hiệu quả trên private. Các thử nghiệm khác chưa vượt điểm public E23 không được trình bày như bản đã chọn.
-
-## Luồng xử lý
+## Pipeline private tốt nhất
 
 ```text
 Official legal corpus
-  → audit / cleaning bảo toàn Điều–Khoản và số liệu pháp lý
-  → legal chunking → SQLite FTS5 BM25 + AITeam dense index
-
-Câu hỏi
-  → BM25 top-k + dense top-k → weighted RRF → ranked top-12 seeds
-  → metadata nguồn → gộp span trùng → bounded same-article expansion
-  → Qwen3.5-2B + E19 metadata-aware LoRA → greedy max704
-  → kiểm tra đủ ID / câu trả lời / định dạng → submission.zip
+  → conservative cleaning và Điều/Khoản-aware chunking
+  → SQLite FTS5 BM25 top-40
+  + AITeamVN/Vietnamese_Embedding top-40
+  → weighted RRF 0.5/0.5, k=60
+  → fused top-20 → lấy 12 seed đầu
+  → bounded parent expansion theo cùng Điều
+  → metadata: tên nguồn, số văn bản, Điều và tiêu đề Điều
+  → Vi-Qwen2-3B-RAG + E45 rank-8 LoRA
+  → greedy max1024
+  → fresh max1536 restart cho finish_reason=length
+  → E43+E44 Unified Clean, suffix-only
+  → validated submission.zip
 ```
 
-Mở rộng ngữ cảnh diễn ra **sau retrieval**: không đổi thứ tự top-12, không tìm kiếm lại và không lấy đáp án chuẩn để chọn văn bản. Bản E23 dùng đúng chính sách E21 GPU1; mỗi parent bị chặn ở 1.200 generator token hoặc 6.000 ký tự, đồng thời không được đẩy 12 seed gốc ra khỏi prompt.
+Không có reranker trong bản đạt điểm private cao nhất. Parent expansion thử lần
+lượt `whole_article → both_neighbors → previous_neighbor → next_neighbor`, với
+giới hạn 1.200 token/6.000 ký tự cho parent và 8.192 input token. Các span
+chồng lấn hoặc tiếp giáp của cùng văn bản/Điều được merge; 12 seed gốc không bị
+loại để nhường chỗ cho expansion.
+
+## Cải tiến tạo ra private-best
+
+Pipeline private trước đó dùng parent context lúc inference nhưng adapter cũ
+chưa được fine-tune trực tiếp trên đúng dạng context này. E45 sửa độ lệch đó:
+
+```text
+RRF top-12
+  → parent expansion + source/article metadata
+  → canonical prompt renderer
+  → assistant-only supervised fine-tuning
+  → dùng lại đúng renderer/context policy khi private inference
+```
+
+LoRA E45 được train mới từ `AITeamVN/Vi-Qwen2-3B-RAG` trên 5.636 QA chính
+thức: rank 8, alpha 16, dropout 0,05, 1 epoch/705 optimizer step, learning rate
+`1e-4`, effective batch 8, NF4 double quantization và maximum sequence 8.192.
+Đáp án chính thức chỉ làm generation target, được nối EOS và không tham gia
+retrieval hay context selection.
+
+Lần nộp private thực tế có 326 câu chạm giới hạn 1.024 token. 183 lượt sinh lại
+1.536 token hoàn tất trước deadline; 143 câu còn lại dùng first-pass 1.024 đã
+checkpoint. Unified Clean được áp dụng cho toàn bộ câu trả lời trước khi ghép.
+
+Chi tiết và bằng chứng kỹ thuật: [private-best E45](docs/PRIVATE-BEST-E45.md).
+
+## Tiến trình public
+
+| Bản | METEOR public | ROUGE-L public | Thay đổi chính |
+| --- | ---: | ---: | --- |
+| E08B | 0.5209 | 0.5533 | Hybrid BM25+dense, RRF top-12 và context-aware LoRA. |
+| E18 | 0.5251 | 0.5623 | Thêm source/document/article metadata chính xác. |
+| E19 | 0.5309 | 0.5632 | Train adapter mới với metadata giống inference. |
+| E23 | 0.5584 | 0.5727 | Bounded same-article parent expansion. |
+| E43/E44 | **0.5817** | E44 cải thiện nhẹ so với E43 | Vi-Qwen E38, FP16 max1024, length-only max1536 và hai tầng suffix cleanup. |
+
+E43/E44 là public-best được đội ghi nhận và đưa hệ thống vào **Top 10 public
+leaderboard**. Điểm public và private thuộc hai tập khác nhau nên không được
+diễn giải như paired comparison.
 
 ## Mã nguồn trong repository
 
-- [`src/uit_dsc_fixed_rag/`](src/uit_dsc_fixed_rag/) — snapshot mã nguồn đúng gói E23 `code-v57`; các module trọng tâm: `e08_context_retrieval.py`, `e18_source_metadata.py`, `e19_metadata_lora.py`, `e21_parent_context.py`, `final_public_e23.py`.
-- [`configs/`](configs/) — contract và checksum được pin cho E23 cùng các bước upstream cần thiết.
-- [`scripts/run_final_public_e23_kaggle.py`](scripts/run_final_public_e23_kaggle.py) và [notebook public E23](notebooks/FINAL-public1000-e23-parent-expanded-max704-dual-gpu-kaggle.ipynb) — runner và workflow Kaggle hai GPU.
-- [`docs/`](docs/) — mô tả chính sách E21/E23 và [đoạn trình bày dự án cho CV](docs/CV-PROJECT.md).
+- [`src/uit_dsc_fixed_rag/`](src/uit_dsc_fixed_rag/) và [`configs/`](configs/):
+  snapshot public E23 ban đầu, thể hiện hybrid retrieval, metadata và parent
+  expansion.
+- [`private-e45-source/`](private-e45-source/): snapshot source/config/notebook/
+  test của E45 inference-aligned parent LoRA và private shard execution.
+- [`docs/PRIVATE-BEST-E45.md`](docs/PRIVATE-BEST-E45.md): pipeline, thông số,
+  kết quả và giới hạn của private-best.
+- [`docs/CV-PROJECT.md`](docs/CV-PROJECT.md): đoạn mô tả dự án dùng cho CV.
 
-Repo **chỉ phát hành source/config/notebook/tài liệu**. Không có official corpus/QA/scorer archive, index, adapter, checkpoint, public prediction, `submission.zip`, Kaggle output hoặc secret. Chạy lại đầy đủ đòi hỏi người có quyền truy cập cung cấp các input chính thức và tự xây dựng/tải artifact E00-v2, E08A, E19, E21 theo checksum trong config. Đây không phải bộ chạy một lệnh từ clone trống.
+Repo chỉ phát hành source, config, notebook, test và tài liệu. Không chứa corpus
+chính thức, QA data, private questions, retrieval index, adapter/model weights,
+checkpoint, prediction hay submission payload.
 
 ## Tính đúng đắn và giới hạn
 
-- Kiểm tra input/artifact bằng SHA-256 và identity của code/config/model; resume fail-closed.
-- Chia dev theo normalized question để hạn chế leakage; không dùng đáp án public/private khi retrieval hoặc generation.
-- Chỉ nộp khi đủ 1.000 ID, đáp án không rỗng và ZIP đúng contract scorer.
-- Điểm public có thể không phản ánh private; không công bố hay suy đoán điểm private.
-
-Chi tiết triển khai: [E21 context policy](docs/27-E21-PARENT-CONTEXT.md) · [E23 public trial](docs/29-FINAL-PUBLIC-E23-PARENT-EXPANDED.md).
+- Train/dev được group theo normalized question để hạn chế leakage.
+- Reference answer không được đọc trong retrieval hoặc private inference.
+- Model stack được kiểm tra dưới giới hạn 4 tỷ tham số theo tham số công bố;
+  quantization và LoRA không được dùng để lách cách tính này.
+- Mọi output phải đủ ID, answer không rỗng và ZIP chỉ chứa UTF-8
+  `submission.json` đúng schema của scorer.
+- Điểm leaderboard là kết quả quan sát của submission đã lưu, không chứng minh
+  riêng từng thay đổi sẽ luôn tạo cùng mức tăng trên dữ liệu khác.
