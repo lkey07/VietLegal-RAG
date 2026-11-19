@@ -8,15 +8,12 @@ dense retrieval, ngữ cảnh phân cấp theo Điều luật và LoRA fine-tuni
 pipeline deterministic, có kiểm tra identity bằng SHA-256 và checkpoint theo
 từng question ID.
 
-> **Thành tích:** **Top 10 public leaderboard**, public-best METEOR **0.5817**;
-> private-best METEOR **0.597327402**, ROUGE-L **0.586192885** trên 1.918 câu.
-> Thứ hạng public do đội thi ghi nhận; các điểm private được lưu trong scoring
-> artifact của đúng submission có SHA-256
-> `d697c48e4ce48410ad4695291c98891f9f872a88cf0f6d1dfc576d8dbf86496b`.
+> **Thành tích:** **Top 13 public leaderboard**, public-best METEOR **0.5817**;
+> private-best METEOR **0.597327402**, ROUGE-L **0.586192885** trên 1.918 câu và đạt thứ hạng top 11 private.
 
 ## Đóng góp chính
 
-- Xây dựng hybrid retrieval trên corpus pháp luật chính thức bằng SQLite FTS5
+- Xây dựng hybrid retrieval trên corpus pháp luật chính thức bằng SQLite.
   BM25 và `AITeamVN/Vietnamese_Embedding`, sau đó hợp nhất thứ hạng bằng RRF.
 - Giữ 12 seed context, bổ sung metadata nguồn và mở rộng có giới hạn sang toàn
   Điều hoặc các chunk lân cận mà không dùng đáp án làm retrieval label.
@@ -51,30 +48,7 @@ giới hạn 1.200 token/6.000 ký tự cho parent và 8.192 input token. Các s
 chồng lấn hoặc tiếp giáp của cùng văn bản/Điều được merge; 12 seed gốc không bị
 loại để nhường chỗ cho expansion.
 
-## Cải tiến tạo ra private-best
 
-Pipeline private trước đó dùng parent context lúc inference nhưng adapter cũ
-chưa được fine-tune trực tiếp trên đúng dạng context này. E45 sửa độ lệch đó:
-
-```text
-RRF top-12
-  → parent expansion + source/article metadata
-  → canonical prompt renderer
-  → assistant-only supervised fine-tuning
-  → dùng lại đúng renderer/context policy khi private inference
-```
-
-LoRA E45 được train mới từ `AITeamVN/Vi-Qwen2-3B-RAG` trên 5.636 QA chính
-thức: rank 8, alpha 16, dropout 0,05, 1 epoch/705 optimizer step, learning rate
-`1e-4`, effective batch 8, NF4 double quantization và maximum sequence 8.192.
-Đáp án chính thức chỉ làm generation target, được nối EOS và không tham gia
-retrieval hay context selection.
-
-Lần nộp private thực tế có 326 câu chạm giới hạn 1.024 token. 183 lượt sinh lại
-1.536 token hoàn tất trước deadline; 143 câu còn lại dùng first-pass 1.024 đã
-checkpoint. Unified Clean được áp dụng cho toàn bộ câu trả lời trước khi ghép.
-
-Chi tiết và bằng chứng kỹ thuật: [private-best E45](docs/PRIVATE-BEST-E45.md).
 
 ## Tiến trình public
 
@@ -86,24 +60,7 @@ Chi tiết và bằng chứng kỹ thuật: [private-best E45](docs/PRIVATE-BEST
 | E23 | 0.5584 | 0.5727 | Bounded same-article parent expansion. |
 | E43/E44 | **0.5817** | E44 cải thiện nhẹ so với E43 | Vi-Qwen E38, FP16 max1024, length-only max1536 và hai tầng suffix cleanup. |
 
-E43/E44 là public-best được đội ghi nhận và đưa hệ thống vào **Top 10 public
-leaderboard**. Điểm public và private thuộc hai tập khác nhau nên không được
-diễn giải như paired comparison.
 
-## Mã nguồn trong repository
-
-- [`src/uit_dsc_fixed_rag/`](src/uit_dsc_fixed_rag/) và [`configs/`](configs/):
-  snapshot public E23 ban đầu, thể hiện hybrid retrieval, metadata và parent
-  expansion.
-- [`private-e45-source/`](private-e45-source/): snapshot source/config/notebook/
-  test của E45 inference-aligned parent LoRA và private shard execution.
-- [`docs/PRIVATE-BEST-E45.md`](docs/PRIVATE-BEST-E45.md): pipeline, thông số,
-  kết quả và giới hạn của private-best.
-- [`docs/CV-PROJECT.md`](docs/CV-PROJECT.md): đoạn mô tả dự án dùng cho CV.
-
-Repo chỉ phát hành source, config, notebook, test và tài liệu. Không chứa corpus
-chính thức, QA data, private questions, retrieval index, adapter/model weights,
-checkpoint, prediction hay submission payload.
 
 ## Tính đúng đắn và giới hạn
 
